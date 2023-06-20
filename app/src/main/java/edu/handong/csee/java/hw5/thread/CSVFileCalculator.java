@@ -1,32 +1,36 @@
 package edu.handong.csee.java.hw5.thread;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class implements the Runnable interface and provides methods for reading and writing CSV files,
  * as well as performing calculations for SQRT, MAX, and MIN tasks.
  */
 public class CSVFileCalculator implements Runnable {
-    private String filePath;
+    private String inputFilePath;
+    private String outputFilePath;
     private ArrayList<ArrayList<String>> csvData;
 
     /**
      * Constructor for CSVFileCalculator class.
      */
-    public CSVFileCalculator(String filePath) {
-        this.filePath = filePath;
+    public CSVFileCalculator(String inputFilePath, String outputFilePath) {
+        this.inputFilePath = inputFilePath;
+        this.outputFilePath = outputFilePath;
         this.csvData = new ArrayList<>();
     }
 
     /**
      * Reads the CSV file and returns the data as a 2D ArrayList.
      */
-    public ArrayList<ArrayList<String>> readCSV(String filePath) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+    public ArrayList<ArrayList<String>> readCSV(String inputFilePath) {
+        try (BufferedReader br = new BufferedReader(new FileReader(inputFilePath))) {
             String line;
 
             while ((line = br.readLine()) != null) {
@@ -47,8 +51,8 @@ public class CSVFileCalculator implements Runnable {
     /**
      * Writes the CSV data to the specified file path.
      */
-    public void writeCSV(ArrayList<ArrayList<String>> csvData, String filePath) {
-        try (FileWriter writer = new FileWriter(filePath)) {
+    public void writeCSV(ArrayList<ArrayList<String>> csvData, String outputFilePath) {
+        try (FileWriter writer = new FileWriter(outputFilePath)) {
             for (ArrayList<String> row : csvData) {
                 StringBuilder line = new StringBuilder();
                 for (String value : row) {
@@ -72,15 +76,32 @@ public class CSVFileCalculator implements Runnable {
         switch (task) {
             case "SQRT":
                 result.append("SQRT: ");
-                result.append(calculateSqrt(inputValues));
+                String[] sqrtValues = inputValues.split(" ");
+                for (String value : sqrtValues) {
+                    double number = Double.parseDouble(value);
+                    double sqrt = Math.sqrt(number);
+                    result.append(sqrt).append(" ");
+                }
                 break;
             case "MAX":
                 result.append("MAX: ");
-                result.append(calculateMax(inputValues));
+                String[] maxValues = inputValues.split(" ");
+                double max = Double.MIN_VALUE;
+                for (String value : maxValues) {
+                    double number = Double.parseDouble(value);
+                    max = Math.max(max, number);
+                }
+                result.append(max);
                 break;
             case "MIN":
                 result.append("MIN: ");
-                result.append(calculateMin(inputValues));
+                String[] minValues = inputValues.split(" ");
+                double min = Double.MAX_VALUE;
+                for (String value : minValues) {
+                    double number = Double.parseDouble(value);
+                    min = Math.min(min, number);
+                }
+                result.append(min);
                 break;
             default:
                 result.append("Invalid task!");
@@ -90,57 +111,11 @@ public class CSVFileCalculator implements Runnable {
     }
 
     /**
-     * Calculates the square root of each input value and returns the result.
-     */
-    private String calculateSqrt(String inputValues) {
-        StringBuilder result = new StringBuilder();
-        String[] values = inputValues.split(" ");
-
-        for (String value : values) {
-            double number = Double.parseDouble(value);
-            double sqrt = Math.sqrt(number);
-            result.append(sqrt).append(" ");
-        }
-
-        return result.toString().trim();
-    }
-
-    /**
-     * Finds the maximum value among the input values and returns it.
-     */
-    private String calculateMax(String inputValues) {
-        String[] values = inputValues.split(" ");
-        double max = Double.MIN_VALUE;
-
-        for (String value : values) {
-            double number = Double.parseDouble(value);
-            max = Math.max(max, number);
-        }
-
-        return String.valueOf(max);
-    }
-
-    /**
-     * Finds the minimum value among the input values and returns it.
-     */
-    private String calculateMin(String inputValues) {
-        String[] values = inputValues.split(" ");
-        double min = Double.MAX_VALUE;
-
-        for (String value : values) {
-            double number = Double.parseDouble(value);
-            min = Math.min(min, number);
-        }
-
-        return String.valueOf(min);
-    }
-
-    /**
      * The run method of the thread.
      */
     @Override
     public void run() {
-        ArrayList<ArrayList<String>> csvData = readCSV(filePath);
+        ArrayList<ArrayList<String>> csvData = readCSV(inputFilePath);
 
         for (ArrayList<String> row : csvData) {
             String task = row.get(0);
@@ -149,6 +124,27 @@ public class CSVFileCalculator implements Runnable {
             row.add(result);
         }
 
-        writeCSV(csvData, filePath);
+        writeCSV(csvData, outputFilePath);
+    }
+
+    /**
+     * Main method to execute the program.
+     */
+    public static void main(String[] args) {
+        String inputFilePath = "";
+        String outputFilePath = "";
+
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.equals("-i")) {
+                inputFilePath = args[i + 1];
+            } else if (arg.equals("-o")) {
+                outputFilePath = args[i + 1];
+            }
+        }
+
+        CSVFileCalculator calculator = new CSVFileCalculator(inputFilePath, outputFilePath);
+        Thread thread = new Thread(calculator);
+        thread.start();
     }
 }

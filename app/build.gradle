@@ -27,16 +27,9 @@ dependencies {
 	implementation group: 'commons-cli', name: 'commons-cli', version: '1.5.0'
 }
 
-// Apply a specific Java toolchain to ease working on different environments.
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(19)
-    }
-}
-
 application {
     // Define the main class for the application.
-    mainClass = 'edu.handong.csee.java.hw4.Calculator'
+    mainClass = 'edu.handong.csee.java.hw5.Calculator'
 }
 
 tasks.named('test') {

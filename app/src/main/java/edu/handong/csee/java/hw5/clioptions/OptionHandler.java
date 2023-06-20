@@ -11,129 +11,129 @@ public class OptionHandler {
     private String dataOutputFilePath;
     private String inputValues;
     private boolean helpRequested;
-
+    
+    private CommandLineParser parser;
+    private HelpFormatter formatter;
+    private CommandLine cmd;
+    
     /**
-     * Getter for helpRequested
+     * Constructor for OptionHandler
+     */
+    public OptionHandler() {
+    	parser = new DefaultParser();
+    	formatter = new HelpFormatter();
+    }
+    /**
+     * getter for HelpRequested
      */
     public boolean getHelpRequested() {
-        return helpRequested;
+    	return helpRequested;
     }
-
+    
     /**
-     * Setter for helpRequested
+     * setter for HelpRequested
      */
-    public void setHelpRequested() {
-        helpRequested = true;
+    public void setHelpRequested(boolean helpRequested) {
+    	this.helpRequested = helpRequested;
     }
-
+    
     /**
-     * Getter for task
+     * getter for Task
      */
     public String getTask() {
-        return task;
+    	return task;
     }
-
+    
     /**
-     * Setter for task
+     * setter for Task
      */
-    public void setTask(String task) {
-        this.task = task;
+    public void setTask (String task) {
+    	this.task = task;
     }
-
+    
     /**
-     * Getter for dataInputFilePath
+     * getter for DataInputFilePath
      */
     public String getDataInputFilePath() {
-        return dataInputFilePath;
+    	return dataInputFilePath;
     }
-
+    
     /**
-     * Setter for dataInputFilePath
+     * setter for DataInputFilePath
      */
     public void setDataInputFilePath(String dataInputFilePath) {
-        this.dataInputFilePath = dataInputFilePath;
+    	this.dataInputFilePath = dataInputFilePath;
     }
-
+    
     /**
-     * Getter for dataOutputFilePath
+     * getter for DataOutputFilePath
      */
     public String getDataOutputFilePath() {
-        return dataOutputFilePath;
+    	return dataOutputFilePath;
     }
-
+    
     /**
-     * Setter for dataOutputFilePath
+     * setter for DataOutputFilePath
      */
     public void setDataOutputFilePath(String dataOutputFilePath) {
-        this.dataOutputFilePath = dataOutputFilePath;
+    	this.dataOutputFilePath = dataOutputFilePath;
     }
-
+    
     /**
-     * Getter for inputValues
+     * getter for InputValues
      */
     public String getInputValues() {
-        return inputValues;
+    	return inputValues;
     }
-
+    
     /**
-     * Setter for inputValues
+     * setter for InputValues
      */
     public void setInputValues(String inputValues) {
-        this.inputValues = inputValues;
+    	this.inputValues = inputValues;
     }
-
+    
     /**
-     * Create the command-line options
+     * Creating Options and their descriptions for users to see and use
      */
     public Options createOptions() {
-        Options options = new Options();
-
-        options.addOption(Option.builder("t")
-                .longOpt("task")
-                .desc("Task name")
-                .hasArg()
-                .argName("task")
-                .build());
-
-        options.addOption(Option.builder("i")
-                .longOpt("input")
-                .desc("Input file path")
-                .hasArg()
-                .argName("input")
-                .build());
-
-        options.addOption(Option.builder("o")
-                .longOpt("output")
-                .desc("Output file path")
-                .hasArg()
-                .argName("output")
-                .build());
-
-        options.addOption(Option.builder("v")
-                .longOpt("values")
-                .desc("Input values")
-                .hasArg()
-                .argName("values")
-                .build());
-
-        options.addOption(Option.builder("h")
-                .longOpt("help")
-                .desc("Print help message")
-                .build());
-
+    	Options options = new Options();
+    	
+    	options.addOption("h", "help", false, "Show the help page");
+    	options.addOption(Option.builder("i").longOpt("ipath")
+    					.desc("Set a path for a data input file. It works with -t SQRT. e.g., -t SQRT -i file.csv -o output.csv")
+    					.argName("A data file path to read")
+    					.hasArg()
+    					.build());
+    	
+    	options.addOption(Option.builder("o").longOpt("opath")
+				.desc("Set a path for a data output file.")
+				.argName("A data file path to write")
+				.hasArg()
+				.build());
+    	
+        options.addOption(Option.builder("t").longOpt("task")
+        				.desc("Set a task. The -t or -i options must be set as well.")
+        				.argName("A task name")
+        				.hasArg()
+        				.build());
+        
+        options.addOption(Option.builder("v").longOpt("values")
+				.desc("Set input values (separator: space), e.g. \"23 21 2\"")
+				.argName("Input values for a task.")
+				.hasArg()
+				.build());
+        
         return options;
     }
-
+    
     /**
-     * Parse the command-line options and arguments
+     * Read the command line and see if it viable or not
      */
     public boolean parseOptions(Options options, String[] args) {
-        CommandLineParser parser = new DefaultParser();
-        HelpFormatter formatter = new HelpFormatter();
-
         try {
-            CommandLine cmd = parser.parse(options, args);
-
+            cmd = parser.parse(options, args);
+            
             if (cmd.hasOption("h")) {
                 helpRequested = true;
                 return true;
@@ -141,6 +141,8 @@ public class OptionHandler {
 
             if (cmd.hasOption("t")) {
                 task = cmd.getOptionValue("t");
+            } else {
+                return false;
             }
 
             if (cmd.hasOption("i")) {
@@ -155,20 +157,23 @@ public class OptionHandler {
                 inputValues = cmd.getOptionValue("v");
             }
 
+            return true;
         } catch (ParseException e) {
-            System.out.println("Failed to parse command-line options. Reason: " + e.getMessage());
-            formatter.printHelp("Calculator", options);
+            System.out.println("Failed to parse command-line options. Error: " + e.getMessage());
             return false;
         }
-
-        return true;
     }
-
+    
     /**
-     * Print the help message
+     * Print the help page if user makes a mistake or types in the h option
      */
     public void printHelp(Options options) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("Calculator", options);
+        String header = "Math Calculator";
+        String footer = "\nThis is the 2023-1 HW4 help page.\n";
+        String usage = "calculator [-h] [-i <A data file path to read>] [-o <A data file\n    path to write>] -t <A task name> [-v <Input values for a task.>]";
+
+        formatter.printHelp(usage, header, options, footer);
     }
+
 }

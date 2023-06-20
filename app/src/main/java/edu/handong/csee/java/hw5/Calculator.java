@@ -2,6 +2,7 @@ package edu.handong.csee.java.hw5;
 
 import edu.handong.csee.java.hw5.engines.*;
 import edu.handong.csee.java.hw5.exceptions.InvalidCommandException;
+import edu.handong.csee.java.hw5.clioptions.OptionHandler;
 
 /**
  * This is the Calculator class that is the main class for the user to use
@@ -16,26 +17,39 @@ public class Calculator {
 
         myCalculator.run(args);
     }
-  
+
     /**
      * This executes the Calculator class for users to use
      */
-    public void run(String[] args) {
-        try {
-            if(args.length == 0) {
-                throw new InvalidCommandException("Please put a computing engine option such as LCM, GCD, SQRT, FACTORIAL, FIBONACCI, MAX, MIN, CUBEVOL, and SPHEREVOL. For example, ./app  MAX 12 4 5 45 100");
-            } 
-        } catch (InvalidCommandException e) {
-        	System.out.println("Exception-01: Invalid command: ");
-            System.out.println(e.getMessage());
-            System.exit(0);
+    public void run(String[] args) {        
+        OptionHandler optionHandler = new OptionHandler();
+        if (!optionHandler.parseOptions(optionHandler.createOptions(), args)) {
+            optionHandler.printHelp(optionHandler.createOptions());
+            return;
         }
 
-        String engineName = args[0].toUpperCase();
+        if (optionHandler.getHelpRequested()) {
+            optionHandler.printHelp(optionHandler.createOptions());
+            return;
+        }
+        
+
+        String task = optionHandler.getTask().toUpperCase();
+        
+        if (task.equals("SQRT")) {
+            String inputFilePath = optionHandler.getDataInputFilePath();
+            String outputFilePath = optionHandler.getDataOutputFilePath();
+
+            if (inputFilePath != null && outputFilePath != null) {
+                SQRTEngine sqrtEngine = new SQRTEngine();
+                sqrtEngine.computeFromFile(inputFilePath, outputFilePath);
+                return;
+            }
+        }
 
         Computable engine =null;
 
-        switch(engineName) {
+        switch(task) {
             case "LCM":
                 engine = new LCMEngine();
                 break;
@@ -67,7 +81,7 @@ public class Calculator {
                 try {
                     throw new InvalidCommandException("Please put a computing engine option such as LCM, GCD, SQRT, FACTORIAL, FIBONACCI, MAX, MIN, CUBEVOL, and SPHEREVOL. For example, ./app  MAX 12 4 5 45 100");
                 } catch (InvalidCommandException e) {
-                	System.out.println("Exception-01: Invalid command: " + engineName);
+                	System.out.println("Exception-01: Invalid command: " + task);
                     System.out.println(e.getMessage());
                     System.exit(0);
                 }
@@ -76,7 +90,7 @@ public class Calculator {
         engine.setInput(args);
         engine.compute();
 
-        System.out.println("The result of " +  engineName + " is " + engine.getResult() + ".");
+        System.out.println("The result of " +  task + " is " + engine.getResult() + ".");
 
     }
 
