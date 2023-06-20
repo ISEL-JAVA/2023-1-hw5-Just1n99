@@ -62,7 +62,7 @@ public class CSVFileCalculator implements Runnable {
             System.out.println("Error occurred while writing to the CSV file: " + e.getMessage());
         }
     }
-
+    
     /**
      * Calculates the result for the specified task and input values.
      */
