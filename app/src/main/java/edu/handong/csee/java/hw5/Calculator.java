@@ -16,7 +16,7 @@ public class Calculator {
 
         myCalculator.run(args);
     }
- 
+  
     /**
      * This executes the Calculator class for users to use
      */
