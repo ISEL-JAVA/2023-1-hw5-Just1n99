@@ -96,19 +96,18 @@ public class MaxEngine implements Computable {
      * This reads and writes contents from a file to another file
      */
     public void computeFromFile(String inputFilePath, String outputFilePath) {
-    	
-    	File inputFile = new File(inputFilePath);
+        File inputFile = new File(inputFilePath);
         if (!inputFile.exists()) {
             OptionHandler optionHandler = new OptionHandler();
             Options options = optionHandler.createOptions();
             optionHandler.printHelp(options);
             return;
         }
-    	
+
         ArrayList<String> lines = FileManager.readLinesFromATxtFile(inputFilePath);
         ArrayList<String> outputLines = new ArrayList<>();
 
-        outputLines.add(lines.get(0));
+        outputLines.add(lines.get(0) + ",MAX"); // Add the additional column label to the header line
 
         for (int i = 1; i < lines.size(); i++) {
             String line = lines.get(i);
@@ -130,10 +129,11 @@ public class MaxEngine implements Computable {
             maxEngine.compute();
 
             resultLine.append(maxEngine.getResult());
-            outputLines.add(resultLine.toString());
+            outputLines.add(line + "," + resultLine.toString());
         }
 
         FileManager.writeAtxtFile(outputFilePath, outputLines);
         System.out.println("The " + outputFilePath + " file has been successfully written.");
     }
+
 }

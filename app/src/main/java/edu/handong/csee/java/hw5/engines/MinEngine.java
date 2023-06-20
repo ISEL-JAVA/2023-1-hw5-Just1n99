@@ -100,7 +100,7 @@ public class MinEngine implements Computable {
         ArrayList<String> lines = FileManager.readLinesFromATxtFile(inputFilePath);
         ArrayList<String> outputLines = new ArrayList<>();
 
-        outputLines.add(lines.get(0));
+        outputLines.add(lines.get(0) + ",MIN"); // Add the additional column label to the header line
 
         for (int i = 1; i < lines.size(); i++) {
             String line = lines.get(i);
@@ -122,7 +122,7 @@ public class MinEngine implements Computable {
             minEngine.compute();
 
             resultLine.append(minEngine.getResult());
-            outputLines.add(resultLine.toString());
+            outputLines.add(line + "," + resultLine.toString());
         }
 
         FileManager.writeAtxtFile(outputFilePath, outputLines);
