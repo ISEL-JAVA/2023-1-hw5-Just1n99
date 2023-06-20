@@ -21,7 +21,7 @@ public class Calculator {
     /**
      * This executes the Calculator class for users to use
      */
-    public void run(String[] args) {        
+    public void run(String[] args) {
         OptionHandler optionHandler = new OptionHandler();
         if (!optionHandler.parseOptions(optionHandler.createOptions(), args)) {
             optionHandler.printHelp(optionHandler.createOptions());
@@ -32,24 +32,38 @@ public class Calculator {
             optionHandler.printHelp(optionHandler.createOptions());
             return;
         }
-        
 
         String task = optionHandler.getTask().toUpperCase();
-        
-        if (task.equals("SQRT")) {
+
+        if (task.equals("SQRT") || task.equals("MIN") || task.equals("MAX")) {
             String inputFilePath = optionHandler.getDataInputFilePath();
             String outputFilePath = optionHandler.getDataOutputFilePath();
 
             if (inputFilePath != null && outputFilePath != null) {
-                SQRTEngine sqrtEngine = new SQRTEngine();
-                sqrtEngine.computeFromFile(inputFilePath, outputFilePath);
+                switch (task) {
+                    case "SQRT":
+                        SQRTEngine sqrtEngine = new SQRTEngine();
+                        sqrtEngine.computeFromFile(inputFilePath, outputFilePath);
+                        break;
+                    case "MIN":
+                        MinEngine minEngine = new MinEngine();
+                        minEngine.computeFromFile(inputFilePath, outputFilePath);
+                        break;
+                    case "MAX":
+                        MaxEngine maxEngine = new MaxEngine();
+                        maxEngine.computeFromFile(inputFilePath, outputFilePath);
+                        break;
+                    default:
+                        System.out.println("Exception-01: Invalid command: " + task);
+                        return;
+                }
                 return;
             }
         }
 
-        Computable engine =null;
+        Computable engine = null;
 
-        switch(task) {
+        switch (task) {
             case "LCM":
                 engine = new LCMEngine();
                 break;
@@ -81,7 +95,7 @@ public class Calculator {
                 try {
                     throw new InvalidCommandException("Please put a computing engine option such as LCM, GCD, SQRT, FACTORIAL, FIBONACCI, MAX, MIN, CUBEVOL, and SPHEREVOL. For example, ./app  MAX 12 4 5 45 100");
                 } catch (InvalidCommandException e) {
-                	System.out.println("Exception-01: Invalid command: " + task);
+                    System.out.println("Exception-01: Invalid command: " + task);
                     System.out.println(e.getMessage());
                     System.exit(0);
                 }
@@ -90,9 +104,6 @@ public class Calculator {
         engine.setInput(args);
         engine.compute();
 
-        System.out.println("The result of " +  task + " is " + engine.getResult() + ".");
-
+        System.out.println("The result of " + task + " is " + engine.getResult() + ".");
     }
-
-
 }
