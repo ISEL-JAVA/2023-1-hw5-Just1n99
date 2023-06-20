@@ -41,45 +41,20 @@ public class MinEngine implements Computable {
      * Sets the input values for computation
      */
     public void setInput(String[] input) {
-        OptionHandler optionHandler = new OptionHandler();
-        Options options = optionHandler.createOptions();
         try {
-            if (optionHandler.parseOptions(options, input)) {
-                if (optionHandler.getHelpRequested()) {
-                    optionHandler.printHelp(options);
-                    System.exit(0);
-                }
-            }
-
-            String task = optionHandler.getTask();
-            String inputValues = optionHandler.getInputValues();
-
-            if (task != null) {
-                if (inputValues != null && !inputValues.isEmpty()) {
-                    String[] inputArray = inputValues.trim().split("\\s+");
-
-                    if (inputArray.length != 1) {
-                        throw new OneInputException("Exception-04: You need one input value for " + getEngineName() + ".");
-                    }
-
+            if (input.length < 3)
+                throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for MIN.");
+            else {
+                inputs = new double[input.length - 1];
+                for (int i = 1; i < input.length; i++) {
                     try {
-                        this.inputs = new double[]{Double.parseDouble(inputArray[0])};
+                        inputs[i - 1] = Double.parseDouble(input[i]);
                     } catch (NumberFormatException e) {
-                        throw new MyNumberFormatException("Exception-05: The input value should be converted into a number. (" + inputArray[0] + " is not a number value for " + getEngineName() + ")");
+                        throw new MyNumberFormatException("Exception-05: The input value should be a number. (" + input[i] + " is not a valid number for MIN.)");
                     }
-
-                    if (this.inputs[0] < 0) {
-                        throw new NegativeNumberException("Exception-03: The input value cannot be negative for " + getEngineName() + ".");
-                    }
-                } else {
-                    optionHandler.printHelp(options);
-                    System.exit(0);
                 }
             }
-        } catch (OneInputException e) {
-            System.out.println(e.getMessage());
-            System.exit(0);
-        } catch (NegativeNumberException e) {
+        } catch (MinimumInputNumberException e) {
             System.out.println(e.getMessage());
             System.exit(0);
         } catch (MyNumberFormatException e) {

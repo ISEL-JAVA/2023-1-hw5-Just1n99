@@ -6,11 +6,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.csv.*;
 
 /**
  * This class implements the Runnable interface and provides methods for reading and writing CSV files,
@@ -56,19 +51,21 @@ public class CSVFileCalculator implements Runnable {
      * Writes the CSV data to the specified file path.
      */
     public void writeCSV(ArrayList<ArrayList<String>> csvData, String outputFilePath) {
-        try (FileWriter writer = new FileWriter(outputFilePath);
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
-
-            csvPrinter.printRecord(csvData.get(0));
-
-            for (int i = 1; i < csvData.size(); i++) {
-                csvPrinter.printRecord(csvData.get(i));
+        try (FileWriter writer = new FileWriter(outputFilePath)) {
+            for (ArrayList<String> row : csvData) {
+                StringBuilder line = new StringBuilder();
+                for (String value : row) {
+                    line.append(value).append(",");
+                }
+                line.deleteCharAt(line.length() - 1); // Remove the trailing comma
+                writer.write(line.toString());
+                writer.write(System.lineSeparator());
             }
         } catch (IOException e) {
             System.out.println("Error occurred while writing to the CSV file: " + e.getMessage());
         }
     }
-
+    
     /**
      * Calculates the result for the specified task and input values.
      */
@@ -113,32 +110,40 @@ public class CSVFileCalculator implements Runnable {
     }
 
     /**
-     * The run method that is called when the thread is started.
+     * The run method of the thread.
      */
     @Override
     public void run() {
-        csvData = readCSV(inputFilePath);
+        ArrayList<ArrayList<String>> csvData = readCSV(inputFilePath);
 
-        ExecutorService executor = Executors.newFixedThreadPool(10);
-
-        for (int i = 1; i < csvData.size(); i++) {
-            final int rowNumber = i;
-            executor.execute(() -> {
-                String task = csvData.get(rowNumber).get(0);
-                String inputValues = csvData.get(rowNumber).get(1);
-                String result = calculate(task, inputValues);
-                csvData.get(rowNumber).add(result);
-            });
-        }
-
-        executor.shutdown();
-
-        try {
-            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException e) {
-            System.out.println("Error occurred while waiting for the thread pool to terminate: " + e.getMessage());
+        for (ArrayList<String> row : csvData) {
+            String task = row.get(0);
+            String inputValues = row.get(1);
+            String result = calculate(task, inputValues);
+            row.add(result);
         }
 
         writeCSV(csvData, outputFilePath);
+    }
+
+    /**
+     * Main method to execute the program.
+     */
+    public static void main(String[] args) {
+        String inputFilePath = "";
+        String outputFilePath = "";
+
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.equals("-i")) {
+                inputFilePath = args[i + 1];
+            } else if (arg.equals("-o")) {
+                outputFilePath = args[i + 1];
+            }
+        }
+
+        CSVFileCalculator calculator = new CSVFileCalculator(inputFilePath, outputFilePath);
+        Thread thread = new Thread(calculator);
+        thread.start();
     }
 }

@@ -40,50 +40,28 @@ public class MaxEngine implements Computable {
      * This checks to see if the user has inputted at least 2 numbers to be compared. If not, return an error message
      */
     public void setInput(String[] input) {
-        OptionHandler optionHandler = new OptionHandler();
-        Options options = optionHandler.createOptions();
         try {
-            if (optionHandler.parseOptions(options, input)) {
-                if (optionHandler.getHelpRequested()) {
-                    optionHandler.printHelp(options);
-                    System.exit(0);
-                }
-            }
+            if(input.length < 3)
+                throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for MAX.");
 
-            String task = optionHandler.getTask();
-            String inputValues = optionHandler.getInputValues();
-
-            if (task != null) {
-                if (inputValues != null && !inputValues.isEmpty()) {
-                    String[] inputArray = inputValues.trim().split("\\s+");
-
-                    if (inputArray.length != 1) {
-                        throw new OneInputException("Exception-04: You need one input value for " + getEngineName() + ".");
-                    }
-
+            else {
+                inputs = new double[input.length - 1];
+                int j = 0;
+                for(int i = 1; i < input.length; i++) {
                     try {
-                        this.inputs = new double[]{Double.parseDouble(inputArray[0])};
-                    } catch (NumberFormatException e) {
-                        throw new MyNumberFormatException("Exception-05: The input value should be converted into a number. (" + inputArray[0] + " is not a number value for " + getEngineName() + ")");
+                        inputs[j] = Double.parseDouble(input[i]);
+                    }catch (NumberFormatException e) {
+                        throw new MyNumberFormatException("Exception-05: The input value should be converted into a number. (" + input[i] + " is not a number value for MAX.)");
                     }
 
-                    if (this.inputs[0] < 0) {
-                        throw new NegativeNumberException("Exception-03: The input value cannot be negative for " + getEngineName() + ".");
-                    }
-                } else {
-                    optionHandler.printHelp(options);
-                    System.exit(0);
+                    j++;
                 }
             }
-        } catch (OneInputException e) {
-            System.out.println(e.getMessage());
-            System.exit(0);
-        } catch (NegativeNumberException e) {
+        } catch (MinimumInputNumberException e) {
             System.out.println(e.getMessage());
             System.exit(0);
         } catch (MyNumberFormatException e) {
-            System.out.println(e.getMessage());
-            System.exit(0);
+            throw new NumberFormatException(e.getMessage());
         }
     }
 
@@ -129,7 +107,7 @@ public class MaxEngine implements Computable {
         ArrayList<String> lines = FileManager.readLinesFromATxtFile(inputFilePath);
         ArrayList<String> outputLines = new ArrayList<>();
 
-        outputLines.add(lines.get(0) + ",MAX"); 
+        outputLines.add(lines.get(0) + ",MAX"); // Add the additional column label to the header line
 
         for (int i = 1; i < lines.size(); i++) {
             String line = lines.get(i);
