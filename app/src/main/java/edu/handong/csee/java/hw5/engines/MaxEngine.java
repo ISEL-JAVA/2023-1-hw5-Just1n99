@@ -113,49 +113,5 @@ public class MaxEngine implements Computable {
     public void setResult(double result) {
         this.result = result;
     }
-    
-    /**
-     * This reads and writes contents from a file to another file
-     */
-    public void computeFromFile(String inputFilePath, String outputFilePath) {
-        File inputFile = new File(inputFilePath);
-        if (!inputFile.exists()) {
-            OptionHandler optionHandler = new OptionHandler();
-            Options options = optionHandler.createOptions();
-            optionHandler.printHelp(options);
-            return;
-        }
-
-        ArrayList<String> lines = FileManager.readLinesFromATxtFile(inputFilePath);
-        ArrayList<String> outputLines = new ArrayList<>();
-
-        outputLines.add(lines.get(0) + ",MAX"); 
-
-        for (int i = 1; i < lines.size(); i++) {
-            String line = lines.get(i);
-            String[] values = line.trim().split(",");
-            double[] numbers = new double[values.length];
-
-            StringBuilder resultLine = new StringBuilder();
-
-            for (int j = 0; j < values.length; j++) {
-                try {
-                    numbers[j] = Double.parseDouble(values[j].trim());
-                } catch (NumberFormatException e) {
-                    throw new MyNumberFormatException("Exception-05: The input value should be converted into a number. (" + values[j] + " is not a number value for MAX.)");
-                }
-            }
-
-            MaxEngine maxEngine = new MaxEngine();
-            maxEngine.setInputs(numbers);
-            maxEngine.compute();
-
-            resultLine.append(maxEngine.getResult());
-            outputLines.add(line + "," + resultLine.toString());
-        }
-
-        FileManager.writeAtxtFile(outputFilePath, outputLines);
-        System.out.println("The " + outputFilePath + " file has been successfully written.");
-    }
 
 }

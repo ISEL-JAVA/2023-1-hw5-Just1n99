@@ -78,12 +78,6 @@
 	                case "FIBONACCI":
 	                    engine = new FibonacciEngine();
 	                    break;
-	                case "MAX":
-	                    engine = new MaxEngine();
-	                    break;
-	                case "MIN":
-	                    engine = new MinEngine();
-	                    break;
 	                case "CUBEVOL":
 	                    engine = new CubeVolEngine();
 	                    break;
