@@ -38,47 +38,47 @@ public class GCDEngine implements Computable {
      * Check to see if the user has inputted at least 2 non-negative numbers. If not, print out an error message
      */
     public void setInput(String[] input) {
-    	OptionHandler optionHandler = new OptionHandler();
-    	Options options = optionHandler.createOptions();
-    	
+       OptionHandler optionHandler = new OptionHandler();
+       Options options = optionHandler.createOptions();
+       
         try {
-        	if(optionHandler.parseOptions(options, input)) {
-        		if(optionHandler.getHelpRequested()) {
-        			optionHandler.printHelp(options);
-        			System.exit(0);
-        		}
-        	}
+           if(optionHandler.parseOptions(options, input)) {
+              if(optionHandler.getHelpRequested()) {
+                 optionHandler.printHelp(options);
+                 System.exit(0);
+              }
+           }
             
-        	String task = optionHandler.getTask();
-        	String inputValues = optionHandler.getInputValues();
-        	
-        	if(task != null) {
-        		if(inputValues != null && !inputValues.isEmpty()) {
-        			String[] inputArray = inputValues.trim().split("\\s+");
-        			a = new double [inputArray.length];
-        			int j = 0;
-        			
-        			if(inputArray.length < 2) {
-        				throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for GCD.");
-        			}
-        			
-        			for (int i = 0; i < inputArray.length; i++) {
+           String task = optionHandler.getTask();
+           String inputValues = optionHandler.getInputValues();
+           
+           if(task != null) {
+              if(inputValues != null && !inputValues.isEmpty()) {
+                 String[] inputArray = inputValues.trim().split("\\s+");
+                 a = new double [inputArray.length];
+                 int j = 0;
+                 
+                 if(inputArray.length < 2) {
+                    throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for GCD.");
+                 }
+                 
+                 for (int i = 0; i < inputArray.length; i++) {
                         try {
                             a[i] = Double.parseDouble(inputArray[i]);
                         } catch (NumberFormatException e) {
                             throw new MyNumberFormatException("Exception-05: The input value should be converted into a number. (" + inputArray[i] + " is not a number value for GCD.)");
                         }
                         if(a[j] < 0) {
-                        	throw new NegativeNumberException("Exception-03: The input value cannot be negative for GCD.");
+                           throw new NegativeNumberException("Exception-03: The input value cannot be negative for GCD.");
                         }
                         j++;
-        			}
-        		}
-        		else {
-    				optionHandler.printHelp(options); 
+                 }
+              }
+              else {
+                optionHandler.printHelp(options); 
                     System.exit(0);
-    			}
-        	}
+             }
+           }
         } catch (MinimumInputNumberException e) {
             System.out.println(e.getMessage());
             System.exit(0);

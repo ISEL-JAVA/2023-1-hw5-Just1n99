@@ -2,10 +2,10 @@ package edu.handong.csee.java.hw5.thread;
 
 import java.io.*;
 import java.util.ArrayList;
-import org.apache.commons.cli.*;
 import edu.handong.csee.java.hw5.clioptions.*;
 import java.util.Arrays;
 import edu.handong.csee.java.hw5.exceptions.*;
+import edu.handong.csee.java.hw5.clioptions.*;
 
 public class CSVFileCalculator implements Runnable {
     private String inputFilePath;
@@ -21,8 +21,15 @@ public class CSVFileCalculator implements Runnable {
     @Override
     public void run() {
         try {
-            OptionHandler optionHandler = new OptionHandler();
-            optionHandler.setDataOutputFilePath(outputFilePath);
+                OptionHandler optionHandler = new OptionHandler();
+                optionHandler.setDataOutputFilePath(outputFilePath);
+                
+                File inputFile = new File(inputFilePath);
+                
+                if (!inputFile.exists()) {
+                	optionHandler.printHelp(optionHandler.createOptions());
+                    return;
+                }
             ArrayList<ArrayList<String>> csvData = readCSV(inputFilePath);
             if(task.equals("SQRT"))
             	calculateSQRT(csvData);
@@ -111,10 +118,10 @@ public class CSVFileCalculator implements Runnable {
                 	try {
                 		number = Double.parseDouble(value);
                 	} catch(NumberFormatException e) {
-                		throw new MyNumberFormatException("Exception: The input value should be converted into a number. (" + value + " is not a number value for SQRT.)");
+                		throw new MyNumberFormatException("Exception-05: The input value should be converted into a number. (" + value + " is not a number value for SQRT.)");
                 	}
                     if (number < 0) {
-                        throw new NegativeNumberException("Exception: The input value cannot be negative for SQRT.");
+                        throw new NegativeNumberException("Exception-03: The input value cannot be negative for SQRT.");
                     }
                     double sqrt = Math.sqrt(number);
                     row.set(j, String.valueOf(sqrt));
@@ -138,19 +145,24 @@ public class CSVFileCalculator implements Runnable {
         
         for (int i = 1; i < csvData.size(); i++) {
             ArrayList<String> row = csvData.get(i);
+            try {
+            	if(row.size() < 2 || csvData.get(1).size() < 2) {
+                	throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for MAX.");
+                }
+            } catch (MinimumInputNumberException e) {
+            	System.out.println(e.getMessage());
+            	System.exit(0);
+            }
             
             double max = Double.MIN_VALUE;
             boolean firstValue = true;
             
             for (String value : row) {
                 try {
-                	if(row.size() < 2) {
-                    	throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for MAX.");
-                    }
                 	try {
                 		number = Double.parseDouble(value);
                 	} catch (NumberFormatException e) {
-                		throw new MyNumberFormatException("Exception: The input value should be converted into a number. (" + value + " is not a number value for MAX.)");
+                		throw new MyNumberFormatException("Exception-05: The input value should be converted into a number. (" + value + " is not a number value for MAX.)");
                 	}
                     if (firstValue) {
                         max = number;
@@ -163,12 +175,10 @@ public class CSVFileCalculator implements Runnable {
                 } catch (MyNumberFormatException e) {
                 	System.out.println(e.getMessage());
                 	System.exit(0);
-                } catch (MinimumInputNumberException e) {
-                	System.out.println(e.getMessage());
-                	System.exit(0);
-                }
+                } 
             }
             row.add(String.valueOf(max));
+            
         }
     }
 
@@ -176,7 +186,6 @@ public class CSVFileCalculator implements Runnable {
         String header = "MIN";
         csvData.get(0).add(header);
         
-        double number;
         
         for (int i = 1; i < csvData.size(); i++) {
             ArrayList<String> row = csvData.get(i);
@@ -188,10 +197,11 @@ public class CSVFileCalculator implements Runnable {
                 	if(row.size() < 2) {
                     	throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for MIN.");
                     }
+                	double number;
                 	try {
                 		number = Double.parseDouble(value);
                 	} catch (NumberFormatException e) {
-                		throw new MyNumberFormatException("Exception: The input value should be converted into a number. (" + value + " is not a number value for MAX.)");
+                		throw new MyNumberFormatException("Exception-05: The input value should be converted into a number. (" + value + " is not a number value for MIN.)");
                 	}
                     if (firstValue) {
                         min = number;

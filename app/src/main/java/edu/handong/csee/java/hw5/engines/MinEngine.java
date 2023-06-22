@@ -39,7 +39,7 @@ public class MinEngine implements Computable {
      * This checks to see if the user has inputted at least 2 numbers to be compared. If not, return an error message
      */
     public void setInput(String[] input) {
-    	OptionHandler optionHandler = new OptionHandler();
+       OptionHandler optionHandler = new OptionHandler();
         Options options = optionHandler.createOptions();
 
         try {
@@ -57,7 +57,7 @@ public class MinEngine implements Computable {
                         String[] inputArray = inputValues.trim().split("\\s+");
                         inputs = new double[inputArray.length];
                         if(inputArray.length < 2) 
-                        	throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for MIN.");
+                           throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for MIN.");
 
                         for (int i = 0; i < inputArray.length; i++) {
                             try {

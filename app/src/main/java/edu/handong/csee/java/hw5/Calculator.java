@@ -28,40 +28,47 @@
 	        }
 	
 	        String task = optionHandler.getTask().toUpperCase();
+	        String dataInputFilePath = optionHandler.getInputValues();
+	        String dataOutputFilePath = optionHandler.getInputValues();
+	        
+	        if(task.equals("SQRT") || task.equals("MIN") || task.equals("MAX")) {
+		        if (dataInputFilePath != null && dataOutputFilePath != null) {
+		            String inputPath = optionHandler.getDataInputFilePath();
+		            String outputPath = optionHandler.getDataOutputFilePath();
 	
-	        if (task.equals("SQRT") || task.equals("MIN") || task.equals("MAX")) {
-	            String inputPath = optionHandler.getDataInputFilePath();
-	            String outputPath = optionHandler.getDataOutputFilePath();
+		            if (inputPath != null && outputPath != null) {
+		                File inputFile = new File(inputPath);
+	
+		                if (inputFile.isDirectory()) {
+		                    File[] files = inputFile.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
+	
+		                    if (files != null && files.length > 0) {
+		                        ExecutorService executor = Executors.newFixedThreadPool(files.length);
+	
+		                        for (File file : files) {
+		                            String outputFilePath = outputPath + File.separator + file.getName();
+		                            CSVFileCalculator calculator = new CSVFileCalculator(file.getAbsolutePath(), outputFilePath, task);
+		                            executor.execute(calculator);
+		                        }
+	
+		                        executor.shutdown();
+	
+		                    } else {
+		                        System.out.println("No CSV files found in the directory: " + inputPath);
+		                    }
+		                } else {
+		                    CSVFileCalculator calculator = new CSVFileCalculator(inputPath, outputPath, task);
+		                    Thread csvThread = new Thread(calculator);
+		                    csvThread.start();
+	
+		                    String outputFileName = new File(outputPath).getName();
+		                    System.out.println("The " + outputFileName + " file has been successfully written.");
+		                }
+		            } else {
+		            	optionHandler.printHelp(optionHandler.createOptions());
+		            }
+	        }
 
-	            if (inputPath != null && outputPath != null) {
-	                File inputFile = new File(inputPath);
-
-	                if (inputFile.isDirectory()) {
-	                    File[] files = inputFile.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
-
-	                    if (files != null && files.length > 0) {
-	                        ExecutorService executor = Executors.newFixedThreadPool(files.length);
-
-	                        for (File file : files) {
-	                            String outputFilePath = outputPath + File.separator + file.getName();
-	                            CSVFileCalculator calculator = new CSVFileCalculator(file.getAbsolutePath(), outputFilePath, task);
-	                            executor.execute(calculator);
-	                        }
-
-	                        executor.shutdown();
-
-	                    } else {
-	                        System.out.println("No CSV files found in the directory: " + inputPath);
-	                    }
-	                } else {
-	                    CSVFileCalculator calculator = new CSVFileCalculator(inputPath, outputPath, task);
-	                    Thread csvThread = new Thread(calculator);
-	                    csvThread.start();
-
-	                    String outputFileName = new File(outputPath).getName();
-	                    System.out.println("The " + outputFileName + " file has been successfully written.");
-	                }
-	            }
 	        } else {
 	            Computable engine = null;
 	
@@ -78,10 +85,19 @@
 	                case "FIBONACCI":
 	                    engine = new FibonacciEngine();
 	                    break;
+	                case "MAX":
+	                    engine = new MaxEngine();
+	                    break;
+	                case "MIN":
+	                    engine = new MinEngine();
+	                    break;
 	                case "CUBEVOL":
 	                    engine = new CubeVolEngine();
 	                    break;
 	                case "SPHEREVOL":
+	                    engine = new SphereVolEngine();
+	                    break;
+	                case "SQRT":
 	                    engine = new SphereVolEngine();
 	                    break;
 	                default:
