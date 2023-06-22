@@ -2,28 +2,38 @@ package edu.handong.csee.java.hw5.thread;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import org.apache.commons.cli.*;
+import edu.handong.csee.java.hw5.clioptions.*;
+import java.util.Arrays;
+import edu.handong.csee.java.hw5.exceptions.*;
 
 public class CSVFileCalculator implements Runnable {
     private String inputFilePath;
     private String outputFilePath;
+    private String task;
 
-    public CSVFileCalculator(String inputFilePath, String outputFilePath) {
+    public CSVFileCalculator(String inputFilePath, String outputFilePath, String task) {
         this.inputFilePath = inputFilePath;
         this.outputFilePath = outputFilePath;
+        this.task = task;
     }
 
     @Override
     public void run() {
         try {
+            OptionHandler optionHandler = new OptionHandler();
+            optionHandler.setDataOutputFilePath(outputFilePath);
             ArrayList<ArrayList<String>> csvData = readCSV(inputFilePath);
-            calculate(csvData);
+            if(task.equals("SQRT"))
+            	calculateSQRT(csvData);
+            else if(task.equals("MAX"))
+            	calculateMax(csvData);
+            else if(task.equals("MIN"))
+            	calculateMin(csvData);
             writeCSV(outputFilePath, csvData);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Thread finished: " + Thread.currentThread().getName());
     }
 
     public ArrayList<ArrayList<String>> readCSV(String filePath) throws IOException {
@@ -47,50 +57,160 @@ public class CSVFileCalculator implements Runnable {
     public void writeCSV(String filePath, ArrayList<ArrayList<String>> csvData) throws IOException {
         File outputFile = new File(filePath);
 
-        outputFile.getParentFile().mkdirs();
+        if (outputFile.isDirectory()) {
+        	
+            String outputFileName = outputFile.getName();
+            String outputFileNameWithoutExtension = outputFileName.substring(0, outputFileName.lastIndexOf("."));
+            String[] args = filePath.split(" ");
+            String outputFileNameFromUser = args[Arrays.asList(args).indexOf("-o") + 1];
+            String finalOutputFileName = outputFileNameWithoutExtension + "-" + outputFileNameFromUser;
+            File finalOutputFile = new File(outputFile, finalOutputFileName);
 
-        String inputFileName = new File(inputFilePath).getName();
-        String outputFileName = outputFile.getName();
-
-        String inputFileNameWithoutExtension = inputFileName.substring(0, inputFileName.lastIndexOf("."));
-
-        String outputFileNameWithoutExtension = outputFileName.substring(0, outputFileName.lastIndexOf("."));
-
-        String finalOutputFileName = "";
-
-        if (outputFileNameWithoutExtension.isEmpty()) {
-            finalOutputFileName = inputFileNameWithoutExtension + "-result.csv";
-        } else {
-            finalOutputFileName = outputFileNameWithoutExtension + "-result.csv";
-        }
-
-        File finalOutputFile = new File(outputFile.getParentFile(), finalOutputFileName);
-
-        BufferedWriter bw = new BufferedWriter(new FileWriter(finalOutputFile));
-        for (ArrayList<String> row : csvData) {
-            StringBuilder sb = new StringBuilder();
-            for (String value : row) {
-                sb.append(value).append(",");
+            BufferedWriter bw = new BufferedWriter(new FileWriter(finalOutputFile));
+            for (ArrayList<String> row : csvData) {
+                StringBuilder sb = new StringBuilder();
+                for (String value : row) {
+                    sb.append(value).append(",");
+                }
+                sb.deleteCharAt(sb.length() - 1);
+                bw.write(sb.toString());
+                bw.newLine();
             }
-            sb.deleteCharAt(sb.length() - 1);
-            bw.write(sb.toString());
-            bw.newLine();
+            bw.close();
+        } else {
+            String outputFileName = outputFile.getName();
+            String outputFileNameFromUser = outputFileName.substring(outputFileName.lastIndexOf(" ") + 1, outputFileName.lastIndexOf(".csv"));
+
+            String finalOutputFileName = outputFileNameFromUser + ".csv";
+
+            File finalOutputFile = new File(finalOutputFileName);
+
+            BufferedWriter bw = new BufferedWriter(new FileWriter(finalOutputFile));
+            for (ArrayList<String> row : csvData) {
+                StringBuilder sb = new StringBuilder();
+                for (String value : row) {
+                    sb.append(value).append(",");
+                }
+                sb.deleteCharAt(sb.length() - 1);
+                bw.write(sb.toString());
+                bw.newLine();
+            }
+            bw.close();
         }
-        bw.close();
     }
 
-    public void calculate(ArrayList<ArrayList<String>> csvData) {
+
+
+    public void calculateSQRT(ArrayList<ArrayList<String>> csvData) {
+    	double number;
         for (int i = 1; i < csvData.size(); i++) {
             ArrayList<String> row = csvData.get(i);
             for (int j = 0; j < row.size(); j++) {
                 String value = row.get(j);
                 try {
-                    double number = Double.parseDouble(value);
+                	try {
+                		number = Double.parseDouble(value);
+                	} catch(NumberFormatException e) {
+                		throw new MyNumberFormatException("Exception: The input value should be converted into a number. (" + value + " is not a number value for SQRT.)");
+                	}
+                    if (number < 0) {
+                        throw new NegativeNumberException("Exception: The input value cannot be negative for SQRT.");
+                    }
                     double sqrt = Math.sqrt(number);
                     row.set(j, String.valueOf(sqrt));
-                } catch (NumberFormatException e) {
+                } catch (MyNumberFormatException e) {
+                	System.out.println(e.getMessage());
+                	System.exit(0);
+                } catch (NegativeNumberException e) {
+                	System.out.println(e.getMessage());
+                	System.exit(0);
                 }
             }
         }
     }
+
+    
+    public void calculateMax(ArrayList<ArrayList<String>> csvData) {
+        String header = "MAX";
+        csvData.get(0).add(header);
+        
+        double number;
+        
+        for (int i = 1; i < csvData.size(); i++) {
+            ArrayList<String> row = csvData.get(i);
+            
+            double max = Double.MIN_VALUE;
+            boolean firstValue = true;
+            
+            for (String value : row) {
+                try {
+                	if(row.size() < 2) {
+                    	throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for MAX.");
+                    }
+                	try {
+                		number = Double.parseDouble(value);
+                	} catch (NumberFormatException e) {
+                		throw new MyNumberFormatException("Exception: The input value should be converted into a number. (" + value + " is not a number value for MAX.)");
+                	}
+                    if (firstValue) {
+                        max = number;
+                        firstValue = false;
+                    } else {
+                        if (number > max) {
+                            max = number;
+                        }
+                    }
+                } catch (MyNumberFormatException e) {
+                	System.out.println(e.getMessage());
+                	System.exit(0);
+                } catch (MinimumInputNumberException e) {
+                	System.out.println(e.getMessage());
+                	System.exit(0);
+                }
+            }
+            row.add(String.valueOf(max));
+        }
+    }
+
+    public void calculateMin(ArrayList<ArrayList<String>> csvData) {
+        String header = "MIN";
+        csvData.get(0).add(header);
+        
+        double number;
+        
+        for (int i = 1; i < csvData.size(); i++) {
+            ArrayList<String> row = csvData.get(i);
+            double min = Double.MAX_VALUE;
+            boolean firstValue = true;
+            
+            for (String value : row) {
+                try {
+                	if(row.size() < 2) {
+                    	throw new MinimumInputNumberException("Exception-02: You need at least 2 input values for MIN.");
+                    }
+                	try {
+                		number = Double.parseDouble(value);
+                	} catch (NumberFormatException e) {
+                		throw new MyNumberFormatException("Exception: The input value should be converted into a number. (" + value + " is not a number value for MAX.)");
+                	}
+                    if (firstValue) {
+                        min = number;
+                        firstValue = false;
+                    } else {
+                        if (number < min) {
+                            min = number;
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                	System.out.println(e.getMessage());
+                	System.exit(0);
+                }  catch (MinimumInputNumberException e) {
+                	System.out.println(e.getMessage());
+                	System.exit(0);
+                }
+            }
+            row.add(String.valueOf(min));
+        }
+    }
+
 }

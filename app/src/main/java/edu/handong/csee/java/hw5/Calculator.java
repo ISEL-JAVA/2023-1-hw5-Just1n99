@@ -29,7 +29,7 @@
 	
 	        String task = optionHandler.getTask().toUpperCase();
 	
-	        if (task.equals("SQRT")) {
+	        if (task.equals("SQRT") || task.equals("MIN") || task.equals("MAX")) {
 	            String inputPath = optionHandler.getDataInputFilePath();
 	            String outputPath = optionHandler.getDataOutputFilePath();
 
@@ -44,7 +44,7 @@
 
 	                        for (File file : files) {
 	                            String outputFilePath = outputPath + File.separator + file.getName();
-	                            CSVFileCalculator calculator = new CSVFileCalculator(file.getAbsolutePath(), outputFilePath);
+	                            CSVFileCalculator calculator = new CSVFileCalculator(file.getAbsolutePath(), outputFilePath, task);
 	                            executor.execute(calculator);
 	                        }
 
@@ -54,7 +54,7 @@
 	                        System.out.println("No CSV files found in the directory: " + inputPath);
 	                    }
 	                } else {
-	                    CSVFileCalculator calculator = new CSVFileCalculator(inputPath, outputPath);
+	                    CSVFileCalculator calculator = new CSVFileCalculator(inputPath, outputPath, task);
 	                    Thread csvThread = new Thread(calculator);
 	                    csvThread.start();
 
